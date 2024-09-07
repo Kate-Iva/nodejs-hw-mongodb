@@ -1,4 +1,6 @@
-import * as contactServices from './services/contacts.js';
+import createHttpError from 'http-errors';
+
+import * as contactServices from '../services/contacts.js';
 
 
 export const getAllContactsController = async (req, res) => {
@@ -11,15 +13,13 @@ export const getAllContactsController = async (req, res) => {
     });
   };
 
-  
+
   export const getContactByIdController = async (req, res) => {
     const { id } = req.params;
     const data = await contactServices.getContactById(id);
 
     if (!data) {
-      res.status(404).json({
-        message: `Contact with id ${id} not found!`,
-      });
+      throw createHttpError(404, `Movie with id=${id} not found`);
     }
 
     res.json({

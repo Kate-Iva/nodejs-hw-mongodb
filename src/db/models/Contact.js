@@ -1,5 +1,9 @@
 import { Schema, model } from 'mongoose';
 
+import { typeList, phoneNumberRegexp } from "../../constants/contacts.js";
+
+import { handleSaveError, setUpdateOptions } from "./hooks.js";
+
 const contactSchema = new Schema(
   {
     name: {
@@ -8,6 +12,7 @@ const contactSchema = new Schema(
     },
     phoneNumber: {
       type: String,
+      match: phoneNumberRegexp,
       required: true,
     },
     email: {
@@ -21,13 +26,19 @@ const contactSchema = new Schema(
     },
     contactType: {
       type: String,
-      enum: ['work', 'home', 'personal'],
+      enum: typeList,
       required: true,
       default: 'personal',
     },
   },
   { timestamps: true },
 );
+
+contactSchema.post("save", handleSaveError);
+
+contactSchema.pre("findOneAndUpdate", setUpdateOptions);
+
+contactSchema.post("findOneAndUpdate", handleSaveError);
 
 const ContactCollection = model('contact', contactSchema);
 

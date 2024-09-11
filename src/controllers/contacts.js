@@ -62,7 +62,7 @@ export const getAllContactsController = async (req, res) => {
   
     res.json({
       status: 200,
-      message: "Conyact patched successfully",
+      message: "Contact patched successfully",
       data: result.data,
     });
   };

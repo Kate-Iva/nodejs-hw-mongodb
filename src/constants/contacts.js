@@ -1,3 +1,3 @@
 export const typeList = ['work', 'home', 'personal'];
 
-export const phoneNumberRegexp = /^\d{13}$/;
+export const phoneRegex = /^\+380\d{9}$/;

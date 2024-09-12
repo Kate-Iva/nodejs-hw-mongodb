@@ -8,31 +8,31 @@ export const getContacts = async ({
     page, 
     sortBy = "_id", 
     sortOrder = SORT_ORDER[0],
-    //filter = {},
-})=> {
+    filter = {},
+}) => {
     const skip = (page - 1) * perPage;
-    const contactQuery = ContactCollection.find(); 
-    
-    //// Приклад: знайти учнів, які є чоловічої або жіночої статі
-// contactSchema.find({ contactType: { $in: typeList } });
 
-    //if(filter.minReleaseYear) {
-        //contactQuery.where("releaseYear").gte(filter.minReleaseYear);
-    //}
-    //if(filter.maxReleaseYear) {
-       // contactQuery.where("releaseYear").lte(filter.maxReleaseYear);
-    //}
+    // Створюємо базовий запит
+    const contactQuery = ContactCollection.find();
 
-    const contacts = await contactQuery.skip(skip).limit(perPage).sort({[sortBy]: sortOrder});
-    
-    const count = await ContactCollection.find().merge(contactQuery).countDocuments();
+    // Застосування фільтрів
+    if (filter.contactType) {
+        contactQuery.where('contactType').equals(filter.contactType);
+    }
 
-    const paginationData = calculatePaginationData({count, perPage, page});
+    // Підрахунок документів з фільтром
+    const count = await ContactCollection.countDocuments(contactQuery.getQuery());
+
+    // Додаємо пагінацію та сортування
+    const contacts = await contactQuery.skip(skip).limit(perPage).sort({ [sortBy]: sortOrder });
+
+    const paginationData = calculatePaginationData({ count, perPage, page });
 
     return {
+
+        contacts,
         page,
         perPage,
-        contacts,
         totalItems: count,
         ...paginationData,
     };

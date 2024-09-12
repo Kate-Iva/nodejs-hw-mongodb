@@ -5,8 +5,8 @@ const calculatePaginationData = ({count, perPage, page})=> {
 
     return {
         totalPages,
-        hasNextPage,
         hasPreviousPage,
+        hasNextPage,
     };
 };
 

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import { typeList, phoneNumberRegexp } from "../../constants/contacts.js";
+import { typeList, phoneRegex } from "../../constants/contacts.js";
 
 import { handleSaveError, setUpdateOptions } from "./hooks.js";
 
@@ -8,11 +8,11 @@ const contactSchema = new Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "name must be exist"],
     },
     phoneNumber: {
       type: String,
-      match: phoneNumberRegexp,
+      match: phoneRegex,
       required: true,
     },
     email: {

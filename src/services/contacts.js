@@ -20,6 +20,10 @@ export const getContacts = async ({
         contactQuery.where('contactType').equals(filter.contactType);
     }
 
+    if(filter.userId) {
+        contactQuery.where("userId").eq(filter.userId);
+    }
+
     // Підрахунок документів з фільтром
     const count = await ContactCollection.countDocuments(contactQuery.getQuery());
 
@@ -38,7 +42,7 @@ export const getContacts = async ({
     };
 };
 
-export const getContactById = (id) => ContactCollection.findById(id);
+export const getContact = filter => ContactCollection.findById(filter);
 
 export const createContact = payload => ContactCollection.create(payload);
 

@@ -1,12 +1,25 @@
 import bcrypt from "bcrypt";
 import createHttpError from "http-errors";
+import jwt from 'jsonwebtoken';//
 import {randomBytes} from "crypto";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
+import handlebars from "handlebars";
 
 import SessionCollection from "../db/models/Session.js";
 import UserCollection from "../db/models/User.js";
 
+import {sendEmail} from "../utils/sendMail.js";
+import {env} from "../utils/env.js";
+// import { createJwtToken, verifyToken } from "../utils/jwt.js";
+
 import { accessTokenLifetime, refreshTokenLifetime } from "../constants/users.js";
 
+import {  SMTP, TEMPLATES_DIR } from "../constants/index.js";//
+
+// const verifyEmailTemplatePath = path.join(TEMPLATES_DIR, "verify-email.html");
+
+// const verifyEmailTemplateSource = await fs.readFile(verifyEmailTemplatePath, "utf-8");
 
 const createSession = ()=> {
     const accessToken = randomBytes(30).toString("base64");
@@ -22,7 +35,9 @@ const createSession = ()=> {
     };
 };
 
-
+//6
+//const appDomain = env("APP_DOMAIN");
+//6//
 export const register = async (payload)=> {
     const {email, password} = payload;
     const user = await UserCollection.findOne({email});
@@ -35,8 +50,41 @@ export const register = async (payload)=> {
     const data = await UserCollection.create({...payload, password: hashPassword});
     delete data._doc.password;
 
+//6
+   // const jwtToken = createJwtToken({email});
+  //  const template = handlebars.compile(verifyEmailTemplateSource);
+  //  const html = template({
+  //      appDomain,
+  //      jwtToken,
+  //  });
+
+  //  const verifyEmail = {
+   //     to: email,
+    //    subject: "Verify email",
+     ///   html,
+   // };
+
+   // await sendEmail(verifyEmail);
+
+//6//
     return data._doc;
 };
+
+//6
+//export const verify = async token => {
+ //   const {data, error} = verifyToken(token);
+  //  if(error) {
+   //     throw createHttpError(401, "Token invalid");
+    //}
+    
+    // const user = await UserCollection.findOne({email: data.email});
+    // if(user.verify) {
+       // throw createHttpError(401, "Email already verify");
+    // }
+    
+   // await UserCollection.findOneAndUpdate({_id: user._id}, {verify: true});
+//};
+//6//
 
 export const login = async(payload)=> {
     const {email, password} = payload;
@@ -44,7 +92,11 @@ export const login = async(payload)=> {
     if(!user) {
         throw createHttpError(401, "Email or password invalid");
     }
-
+//6
+    // if(!user.verify) {
+      //  throw createHttpError(401, "Email not verify");
+   // }
+//6//
     const passwordCompare = await bcrypt.compare(password, user.password);
     if(!passwordCompare) {
         throw createHttpError(401, "Email or password invalid");
@@ -97,3 +149,77 @@ export const logout = async (sessionId)=> {
 };
 
 export const findUser = filter => UserCollection.findOne(filter);
+
+//6.1
+export const requestResetToken = async email => {
+    const user = await UserCollection.findOne({ email });
+  
+    if (!user) {
+      throw createHttpError(404, 'User not found');
+    }
+  
+    const resetToken = jwt.sign(
+      {
+        sub: user._id,
+        email,
+      },
+      env('JWT_SECRET'),
+      {
+        expiresIn: '15m',
+      }
+    );
+   
+    //?
+    const resetPasswordTemplatePath = path.join(
+      TEMPLATES_DIR,
+      'reset-password-email.html'
+    );
+  
+    const templateSource = (
+      await fs.readFile(resetPasswordTemplatePath)
+    ).toString();
+  
+    const template = handlebars.compile(templateSource);
+    const html = template({
+      name: user.name,
+      link: `${env('APP_DOMAIN')}/reset-password?token=${resetToken}`,
+    });
+  //
+  
+    await sendEmail({
+      from: env(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Reset your password',
+      html,
+    });
+  };
+  
+  export const resetPassword = async payload => {
+    let entries;
+  
+    try {
+      entries = jwt.verify(payload.token, env('JWT_SECRET'));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw createHttpError(401, error.message);
+      }
+  
+      throw error;
+    }
+  
+    const user = await UserCollection.findOne({
+      email: entries.email,
+      _id: entries.sub,
+    });
+  
+    if (!user) {
+      throw createHttpError(404, 'User not found');
+    }
+  
+    const encryptedPassword = await bcrypt.hash(user.password, 10);
+  
+    await UserCollection.updateOne(
+      { _id: user._id },
+      { password: encryptedPassword }
+    );
+  };

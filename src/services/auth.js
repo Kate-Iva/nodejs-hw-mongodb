@@ -194,32 +194,33 @@ export const requestResetToken = async email => {
     });
   };
   
-  export const resetPassword = async payload => {
+  export const resetPassword = async (payload) => {
+    console.log("received payload: ", payload);
     let entries;
-  
+
     try {
-      entries = jwt.verify(payload.token, env('JWT_SECRET'));
+        entries = jwt.verify(payload.token, env('JWT_SECRET'));
     } catch (error) {
-      if (error instanceof Error) {
         throw createHttpError(401, error.message);
-      }
-  
-      throw error;
     }
-  
+
     const user = await UserCollection.findOne({
-      email: entries.email,
-      _id: entries.sub,
+        email: entries.email,
+        _id: entries.sub,
     });
-  
+
     if (!user) {
-      throw createHttpError(404, 'User not found');
+        throw createHttpError(404, 'User not found');
     }
-  
-    const encryptedPassword = await bcrypt.hash(user.password, 10);
-  
+
+    // Хешуємо новий пароль, який передається в payload
+    const { password } = payload;
+    const encryptedPassword = await bcrypt.hash(password, 10); // Хешуємо новий пароль
+
     await UserCollection.updateOne(
-      { _id: user._id },
-      { password: encryptedPassword }
+        { _id: user._id },
+        { password: encryptedPassword }
     );
-  };
+
+    return { message: 'Password has been reset successfully' }; // Повертаємо повідомлення про успіх
+};

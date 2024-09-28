@@ -25,9 +25,9 @@ contactsRouter.get('/:id', isValidId, ctrlWrapper(contactControllers.getContactB
 
 contactsRouter.post("/", upload.single('photo'), validateBody(contactAddSchema), ctrlWrapper(contactControllers.addContactController));
 
-contactsRouter.put("/:id", upload.single('photo'), isValidId, validateBody(contactAddSchema), ctrlWrapper(contactControllers.upsertContactController));
+contactsRouter.put("/:id", isValidId, upload.single('photo'), validateBody(contactAddSchema), ctrlWrapper(contactControllers.upsertContactController));
 
-contactsRouter.patch("/:id", upload.single('photo'), isValidId, validateBody(contactPatchSchema),ctrlWrapper(contactControllers.patchContactController));
+contactsRouter.patch("/:id", isValidId, upload.single('photo'), validateBody(contactPatchSchema),ctrlWrapper(contactControllers.patchContactController));
 
 contactsRouter.delete("/:id", isValidId, ctrlWrapper(contactControllers.deleteContactController));
 

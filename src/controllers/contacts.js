@@ -56,8 +56,7 @@ export const getAllContactsController = async (req, res) => {
   };
 
   export const addContactController = async(req, res)=> {
-    console.log(req.body);
-    console.log(req.file);
+
 //6.2
     let photo;
     if(req.file) {
@@ -82,8 +81,23 @@ export const getAllContactsController = async (req, res) => {
   export const upsertContactController = async(req, res)=> {
     const {id} = req.params;
     const {_id: userId} = req.user;
-    const {isNew, data} = await contactServices.updateContact({_id: id, userId}, req.body, {upsert: true});
-  
+
+    //6.2
+    let photo;
+    if (req.file) {
+      if (enableCloudinary === "true") {
+        photo = await saveFileToCloudinary(req.file, "contacts_photo");
+      } else {
+        photo = await saveFileToUploadDir(req.file);
+      }
+    }
+
+    const { isNew, data } = await contactServices.updateContact(
+      { _id: id, userId },
+      { ...req.body, photo }, 
+      { upsert: true }
+    );
+//
     const status = isNew ? 201 : 200;
   
     res.status(status).json({
@@ -96,7 +110,27 @@ export const getAllContactsController = async (req, res) => {
   export const patchContactController = async(req, res)=> {
     const {id} = req.params;
     const {_id: userId} = req.user;
-    const result = await contactServices.updateContact({_id: id, userId}, req.body);
+
+    //6.2
+    let photo;
+    if (req.file) {
+      if (enableCloudinary === "true") {
+        photo = await saveFileToCloudinary(req.file, "contacts_photo");
+      } else {
+        photo = await saveFileToUploadDir(req.file);
+      }
+    }
+    
+    const updateData = { ...req.body };
+    if (photo) {
+      updateData.photo = photo; // Додаємо нове фото, якщо надіслане
+    }
+
+    const result = await contactServices.updateContact(
+      { _id: id, userId },
+      { ...req.body, photo } 
+    );
+    //
   
     if (!result) {
       throw createHttpError(404, `Contact with id=${id} not found`);

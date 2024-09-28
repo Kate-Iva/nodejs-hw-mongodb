@@ -11,17 +11,14 @@ import logger from "./middlewares/logger.js";
 import authRouter from "./routers/auth.js";
 import contactsRouter from "./routers/contacts.js";
 
-import { UPLOAD_DIR } from './constants/index.js';  //
-
 export const setupServer = () => {
   const app = express();
-
-  app.use('/uploads', express.static(UPLOAD_DIR));  //
 
   app.use(logger);
   app.use(cors());
   app.use(express.json());
   app.use(cookieParser());
+  app.use(express.static("uploads"));
 
   // 
   app.use("/auth", authRouter);

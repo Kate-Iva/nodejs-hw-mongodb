@@ -6,6 +6,7 @@ import ctrlWrapper from "../utils/ctrlWrapper.js";
 
 import isValidId from "../middlewares/isValidId.js";
 import authenticate from "../middlewares/authenticate.js";
+import upload from "../middlewares/uploads.js";
 
 import validateBody from "../utils/validateBody.js";
 
@@ -19,11 +20,14 @@ contactsRouter.get('/', ctrlWrapper(contactControllers.getAllContactsController)
   
 contactsRouter.get('/:id', isValidId, ctrlWrapper(contactControllers.getContactByIdController));
 
-contactsRouter.post("/", validateBody(contactAddSchema), ctrlWrapper(contactControllers.addContactController));
+// upload.fields([{name: "poster", maxCount: 1}, {name: "subposter", maxCount: 2}])
+// upload.array("poster", 8)
 
-contactsRouter.put("/:id", isValidId, validateBody(contactAddSchema), ctrlWrapper(contactControllers.upsertContactController));
+contactsRouter.post("/", upload.single('photo'), validateBody(contactAddSchema), ctrlWrapper(contactControllers.addContactController));
 
-contactsRouter.patch("/:id", isValidId, validateBody(contactPatchSchema),ctrlWrapper(contactControllers.patchContactController));
+contactsRouter.put("/:id", upload.single('photo'), isValidId, validateBody(contactAddSchema), ctrlWrapper(contactControllers.upsertContactController));
+
+contactsRouter.patch("/:id", upload.single('photo'), isValidId, validateBody(contactPatchSchema),ctrlWrapper(contactControllers.patchContactController));
 
 contactsRouter.delete("/:id", isValidId, ctrlWrapper(contactControllers.deleteContactController));
 

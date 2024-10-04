@@ -12,6 +12,7 @@ import UserCollection from "../db/models/User.js";
 import {sendEmail} from "../utils/sendMail.js";
 import {env} from "../utils/env.js";
 // import { createJwtToken, verifyToken } from "../utils/jwt.js";
+import { validateCode } from "../utils/googleOAuth2.js";
 
 import { accessTokenLifetime, refreshTokenLifetime } from "../constants/users.js";
 
@@ -114,6 +115,35 @@ export const login = async(payload)=> {
     return userSession;
 };
 
+//7.1/
+export const signinOrSignupWithGoogleOAuth = async(code)=> {
+    const loginTicket = await validateCode(code);
+    const payload = loginTicket.getPayload();
+    console.log(payload);
+
+    let user = await UserCollection.findOne({email: payload.email});
+    if(!user) {
+        const password = randomBytes(10);
+        const hashPassword = await bcrypt.hash(password, 10);
+        user = await UserCollection.create({
+            email: payload.email,
+            name: payload.name,
+            password: hashPassword,
+            verify: true,
+        });
+        delete user._doc.password;
+    } 
+
+    const sessionData = createSession();
+
+    const userSession = await SessionCollection.create({
+        userId: user._id,
+        ...sessionData,
+    });
+
+    return userSession;
+};
+//
 
 export const findSessionByAccessToken = accessToken => SessionCollection.findOne({accessToken});
 

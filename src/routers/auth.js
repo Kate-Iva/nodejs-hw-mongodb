@@ -6,11 +6,15 @@ import * as authControllers from "../controllers/auth.js";
 import ctrlWrapper from "../utils/ctrlWrapper.js";
 import validateBody from "../utils/validateBody.js";
 
-import {userRegisterSchema, userLoginSchema, requestResetEmailSchema, resetPasswordSchema } from "../validation/users.js";
+import {userRegisterSchema, userLoginSchema, requestResetEmailSchema, resetPasswordSchema, userLoginWithGoogleOAuthSchema } from "../validation/users.js";
 
 const authRouter = Router();
 
 authRouter.post("/register", validateBody(userRegisterSchema), ctrlWrapper(authControllers.registerController));
+
+authRouter.get("/google-oauth-url", ctrlWrapper(authControllers.getGoogleOauthUrlController));
+
+authRouter.post("/confirm-google-auth", validateBody(userLoginWithGoogleOAuthSchema), ctrlWrapper(authControllers.loginWithGoogleOAuthController));
 
 // authRouter.get("/verify", ctrlWrapper(authControllers.verifyController));
 

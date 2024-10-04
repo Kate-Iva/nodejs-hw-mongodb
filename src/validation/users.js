@@ -23,3 +23,9 @@ export const requestResetEmailSchema = Joi.object({
     token: Joi.string().required(),
   });
   //
+
+  //7.1/
+  export const userLoginWithGoogleOAuthSchema = Joi.object({
+    code: Joi.string().required(),
+});
+//

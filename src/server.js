@@ -11,6 +11,8 @@ import logger from "./middlewares/logger.js";
 import authRouter from "./routers/auth.js";
 import contactsRouter from "./routers/contacts.js";
 
+import { swaggerDocs } from './middlewares/swaggerDocs.js';
+
 export const setupServer = () => {
   const app = express();
 
@@ -19,11 +21,12 @@ export const setupServer = () => {
   app.use(express.json());
   app.use(cookieParser());
   app.use(express.static("uploads"));
+ 
 
   // 
   app.use("/auth", authRouter);
   app.use("/contacts", contactsRouter);
-
+ app.use('/api-docs', swaggerDocs());
   //
   app.use(notFoundHandler);
 

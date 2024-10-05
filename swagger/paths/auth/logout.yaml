@@ -1,0 +1,13 @@
+tags:
+  - Auth
+summary: Logout user
+operationId: logoutUser
+description: 'Logout user'
+security: []
+responses:
+  '204':
+    description: Creates a contact
+    content:
+      application/json:
+        schema:
+          type: string

@@ -122,7 +122,6 @@ export const requestResetEmailController = async (req, res) => {
 };
 
 export const loginWithGoogleOAuthController = async(req, res)=> {
-    console.log("Request body:", req.body);
 
     const session = await authServices.signinOrSignupWithGoogleOAuth(req.body.code);
 

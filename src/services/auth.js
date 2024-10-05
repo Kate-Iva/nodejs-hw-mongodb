@@ -119,7 +119,6 @@ export const login = async(payload)=> {
 export const signinOrSignupWithGoogleOAuth = async(code)=> {
     const loginTicket = await validateCode(code);
     const payload = loginTicket.getPayload();
-    console.log(payload);
 
     let user = await UserCollection.findOne({email: payload.email});
     if(!user) {

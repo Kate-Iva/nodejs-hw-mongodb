@@ -26,3 +26,5 @@ export const SMTP = {
     API_SECRET: 'API_SECRET',
   };
 //6.1//
+
+export const SWAGGER_PATH = path.join(process.cwd(), 'docs', 'swagger.json');
